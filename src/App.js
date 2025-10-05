@@ -1,55 +1,95 @@
-import React from "react";
-import logo from "./logo.svg";
-import "./App.css";
+import React, { useState } from 'react';
+import './App.css';
 
-/**
- * Uses Tailwind CSS for styling
- * Tailwind file is imported in App.css
- */
+// --- A mesma mágica de antes para carregar as imagens ---
+const imagesContext = require.context('./tutorial-images', true, /\.(png|jpe?g|svg|gif|webp)$/i);
+const tutorialImages = imagesContext.keys()
+    .map(imagesContext)
+    .filter(path => typeof path === 'string')
+    .sort((a, b) => { // Ordenamos diretamente aqui
+      const getName = (url) => url.split('/').pop().split('?')[0];
+      return getName(a).localeCompare(getName(b));
+    });
+// --- Fim da mágica ---
 
-export default function App() {
+
+function App() {
+  // --- A Ferramenta do React: O Estado (State) ---
+  // 'currentIndex' é o número do slide que estamos a ver. Começamos no 0 (o primeiro).
+  // 'setCurrentIndex' é a função que usamos para mudar de slide.
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Função para ir para o slide anterior
+  const goToPrevious = () => {
+    // Verifica se estamos no primeiro slide. Se sim, vai para o último. Senão, volta 1.
+    const isFirstSlide = currentIndex === 0;
+    const newIndex = isFirstSlide ? tutorialImages.length - 1 : currentIndex - 1;
+    setCurrentIndex(newIndex);
+  };
+
+  // Função para ir para o próximo slide
+  const goToNext = () => {
+    // Verifica se estamos no último slide. Se sim, volta para o primeiro. Senão, avança 1.
+    const isLastSlide = currentIndex === tutorialImages.length - 1;
+    const newIndex = isLastSlide ? 0 : currentIndex + 1;
+    setCurrentIndex(newIndex);
+  };
+
+  // Função para ir para um slide específico (usado pelos pontinhos)
+  const goToSlide = (slideIndex) => {
+    setCurrentIndex(slideIndex);
+  };
+
+  // Se não houver imagens, não mostra nada
+  if (tutorialImages.length === 0) {
+    return (
+      <div className="App">
+        <h1>Adicione imagens na pasta `src/tutorial-images` para começar!</h1>
+      </div>
+    );
+  }
+
   return (
-    <div className="app min-h-screen text-blue-200 flex items-center flex-col p-20">
-      <div className="mb-10 grid grid-cols-4 grid-rows-2 w-1/2 mx-auto">
-        <img className="opacity-25" src={logo} alt="React Logo" width="300" />
-        <img
-          className="col-span-2 row-span-3 animate-spin m-auto"
-          style={{ animationDuration: "30s" }}
-          src={logo}
-          alt="React Logo"
-          width="300"
-        />
-        <img className="opacity-25" src={logo} alt="React Logo" width="300" />
-        <img className="opacity-25" src={logo} alt="React Logo" width="300" />
-        <img className="opacity-25" src={logo} alt="React Logo" width="300" />
-      </div>
+    <div className="App">
+      <header className="App-header">
+        <h1>Tutorial de Deploy na DigitalOcean</h1>
+        <p>Use as setas para navegar entre os passos</p>
+      </header>
+      
+      <main className="carousel-container">
+        {/* Setas de Navegação */}
+        <div className="arrow left-arrow" onClick={goToPrevious}>&#10094;</div>
+        <div className="arrow right-arrow" onClick={goToNext}>&#10095;</div>
 
-      <h1 className="text-2xl lg:text-5xl mb-10 text-right">
-        Welcome to Your New React App{" "}
-        <span className="block text-lg text-blue-400">on DigitalOcean</span>
-      </h1>
+        {/* Slide Principal com a Imagem */}
+        <div className="carousel-slide">
+          {/* A key={currentIndex} é um truque para forçar o React a re-renderizar o elemento,
+              o que ajuda a disparar a nossa animação CSS de fade-in. */}
+          <img 
+            key={currentIndex}
+            src={tutorialImages[currentIndex]} 
+            alt={`Passo ${currentIndex + 1}`} 
+            className="tutorial-image" 
+          />
+          <div className="slide-counter">
+            {currentIndex + 1} / {tutorialImages.length}
+          </div>
+        </div>
 
-      <div className="grid grid-cols-2 grid-rows-2 gap-4">
-        <Button
-          text="DigitalOcean Docs"
-          url="https://www.digitalocean.com/docs/app-platform"
-        />
-        <Button
-          text="DigitalOcean Dashboard"
-          url="https://cloud.digitalocean.com/apps"
-        />
-      </div>
+        {/* Pontinhos de Navegação */}
+        <div className="dots-container">
+          {tutorialImages.map((slide, slideIndex) => (
+            <div 
+              key={slideIndex}
+              className={`dot ${currentIndex === slideIndex ? 'active' : ''}`}
+              onClick={() => goToSlide(slideIndex)}
+            >
+            </div>
+          ))}
+        </div>
+      </main>
     </div>
   );
 }
 
-function Button({ className, text, url = "#" }) {
-  return (
-    <a
-      href={url}
-      className={`${className} py-3 px-6 bg-purple-400 hover:bg-purple-300 text-purple-800 hover:text-purple-900 block rounded text-center shadow flex items-center justify-center leading-snug text-xs transition ease-in duration-150`}
-    >
-      {text}
-    </a>
-  );
-}
+export default App;

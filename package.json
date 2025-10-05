@@ -7,14 +7,15 @@
     "@testing-library/react": "^14.3.1",
     "@testing-library/user-event": "^14.6.1",
     "babel-preset-react-app": "^10.1.0",
+    "cross-env": "^10.1.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-scripts": "^5.0.1",
     "serve": "^14.2.4"
   },
   "scripts": {
-    "start": "node sammy.js; serve -s _static -l tcp://0.0.0.0:$PORT -n",
-    "build": "rm -r _static 2>/dev/null; node sammy.js; react-scripts build && mv build _static",
+    "start": "node sammy.js && serve -s _static -l tcp://0.0.0.0:$PORT -n",
+    "build": "node sammy.js && cross-env BUILD_PATH=_static react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },
